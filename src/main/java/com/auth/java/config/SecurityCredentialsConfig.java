@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -52,10 +53,17 @@ public class SecurityCredentialsConfig extends WebSecurityConfigurerAdapter {
                 jwtConfig
         );
         filter.setAuthenticationSuccessHandler(
-                (request, response, authentication) -> objectMapper.writeValue(
-                        response.getOutputStream(),
-                        ImmutableMap.of(jwtConfig.getHeader(), createToken(authentication))
-                ));
+                (request, response, authentication) ->
+                    //Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+                    //Optional<String> role = roles.stream().findFirst();
+                    //String r = role.orElseThrow("");
+                    objectMapper.writeValue(
+                            response.getOutputStream(),
+                            ImmutableMap.of(jwtConfig.getHeader(), createToken(authentication),
+                                    "roles", AuthorityUtils.authorityListToSet(authentication.getAuthorities()),
+                                    "userName", authentication.getName())
+                    )
+                );
         filter.setAuthenticationManager(authenticationManagerBean());
         return filter;
     }

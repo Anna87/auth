@@ -46,27 +46,6 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
         }
     }
 
-//    @Override
-//    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-//                                            Authentication auth) throws IOException, ServletException {
-//
-//        Long now = System.currentTimeMillis();
-//        String token = Jwts.builder()
-//                .setSubject(auth.getName())
-//                .claim("authorities", auth.getAuthorities().stream()
-//                        .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-//                .setIssuedAt(new Date(now))
-//                .setExpiration(new Date(now + jwtConfig.getExpiration() * 1000))  // in milliseconds
-//                .signWith(SignatureAlgorithm.HS512, jwtConfig.getSecret().getBytes())
-//                .compact();
-//
-//        response.setHeader( "Content-Disposition", jwtConfig.getPrefix() + token );
-//        //response.addHeader( "Content-Disposition", jwtConfig.getPrefix() + token );
-//        response.addHeader(jwtConfig.getHeader(), jwtConfig.getPrefix() + token);
-//        //Cookie cookie = new Cookie(jwtConfig.getHeader(), jwtConfig.getPrefix() + token);
-//        //response.addCookie(cookie);
-//        //super.successfulAuthentication(request, response, chain, auth);
-//    }
 
     // A (temporary) class just to represent the user credentials
     private static class UserCredentials {

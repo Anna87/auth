@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         final List<AppUser> users = Arrays.asList(
-                new AppUser(1, "omar", passwordEncoder.encode("12345"), "USER"),
+                new AppUser(1, "anna", passwordEncoder.encode("12345"), "USER"),
                 new AppUser(2, "admin", passwordEncoder.encode("12345"), "ADMIN")
         );
 
