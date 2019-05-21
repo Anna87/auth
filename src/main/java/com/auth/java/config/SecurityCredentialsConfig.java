@@ -90,6 +90,7 @@ public class SecurityCredentialsConfig extends WebSecurityConfigurerAdapter {
         return new JwtConfig();
     }
 
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
