@@ -1,8 +1,8 @@
 package com.auth.java.security;
 
 import com.auth.java.model.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,18 +12,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Getter
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails {
     private String id;
-
     private String username;
-
-    @JsonIgnore
     private String email;
-
-    @JsonIgnore
     private String password;
-
     private Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(User user) {
@@ -38,21 +33,6 @@ public class UserPrincipal implements UserDetails {
                 user.getPassword(),
                 authorities
         );
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
     }
 
     @Override
