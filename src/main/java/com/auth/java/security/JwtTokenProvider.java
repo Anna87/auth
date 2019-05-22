@@ -1,9 +1,8 @@
 package com.auth.java.security;
 
 import com.auth.java.config.JwtConfig;
-import io.jsonwebtoken.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,17 +17,14 @@ public class JwtTokenProvider {
     @Autowired
     private JwtConfig jwtConfig;
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-
-
-    public String getUserIdFromJWT(String token) {
+    /*public String getUserIdFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtConfig.getSecret())
                 .parseClaimsJws(token)
                 .getBody();
 
         return claims.getSubject();
-    }
+    }*/
 
     public String createToken(Authentication auth){
         Long now = System.currentTimeMillis();
@@ -42,13 +38,13 @@ public class JwtTokenProvider {
                 //.signWith(SignatureAlgorithm.HS512, jwtConfig.getSecret())
                 .compact();
     }
-
+/*
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtConfig.getSecret()).parseClaimsJws(authToken);
             return true;
-        /*} catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");*/
+        } catch (SignatureException ex) {
+            logger.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
             logger.error("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
@@ -60,5 +56,5 @@ public class JwtTokenProvider {
         }
         return false;
     }
-
+*/
 }
