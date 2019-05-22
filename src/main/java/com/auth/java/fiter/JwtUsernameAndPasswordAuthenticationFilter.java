@@ -1,6 +1,7 @@
 package com.auth.java.fiter;
 
 import com.auth.java.config.JwtConfig;
+import com.auth.java.payload.SignUpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,10 +35,11 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 
         try {
 
-            UserCredentials creds = new ObjectMapper().readValue(request.getInputStream(), UserCredentials.class);
+            //UserCredentials creds = new ObjectMapper().readValue(request.getInputStream(), UserCredentials.class);
+            SignUpRequest req = new ObjectMapper().readValue(request.getInputStream(), SignUpRequest.class);
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    creds.getUsername(), creds.getPassword(), Collections.emptyList());
+                    req.getUsername(), req.getPassword(), Collections.emptyList());
 
             return authManager.authenticate(authToken);
 
@@ -50,9 +52,15 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
     // A (temporary) class just to represent the user credentials
     private static class UserCredentials {
 
-        private String username, password;
+        private String username, password, name, email;
 
         public String getUsername() {
+            return username;
+        }
+        public String getName() {
+            return username;
+        }
+        public String getEmail() {
             return username;
         }
 
