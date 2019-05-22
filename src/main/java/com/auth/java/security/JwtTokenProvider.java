@@ -17,15 +17,6 @@ public class JwtTokenProvider {
     @Autowired
     private JwtConfig jwtConfig;
 
-    /*public String getUserIdFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtConfig.getSecret())
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
-    }*/
-
     public String createToken(Authentication auth){
         Long now = System.currentTimeMillis();
         return Jwts.builder()
@@ -38,23 +29,5 @@ public class JwtTokenProvider {
                 //.signWith(SignatureAlgorithm.HS512, jwtConfig.getSecret())
                 .compact();
     }
-/*
-    public boolean validateToken(String authToken) {
-        try {
-            Jwts.parser().setSigningKey(jwtConfig.getSecret()).parseClaimsJws(authToken);
-            return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            logger.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            logger.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            logger.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            logger.error("JWT claims string is empty.");
-        }
-        return false;
-    }
-*/
+
 }
