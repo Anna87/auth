@@ -1,10 +1,11 @@
 package com.auth.java.model;
 
+import com.auth.java.service.TokenVerivicationStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Set;
+import java.util.Date;
 
 @Document
 @Builder(toBuilder = true)
@@ -12,12 +13,11 @@ import java.util.Set;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class VerificationToken {
     @Id
     private String id;
-    private String username;
-    private String email;
-    private String password;
-    private Set<String> roles;
-    private boolean enabled;
+    private String token;
+    private User user;
+    private Date expiryDate;
+    private TokenVerivicationStatus status;
 }

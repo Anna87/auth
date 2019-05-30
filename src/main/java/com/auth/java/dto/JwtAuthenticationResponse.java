@@ -1,4 +1,4 @@
-package com.auth.java.payload;
+package com.auth.java.dto;
 
 
 import lombok.*;

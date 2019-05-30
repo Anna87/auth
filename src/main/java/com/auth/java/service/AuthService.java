@@ -1,14 +1,20 @@
 package com.auth.java.service;
 
+import com.auth.java.dto.JwtAuthenticationResponse;
+import com.auth.java.dto.LoginRequest;
+import com.auth.java.dto.RegisterRequest;
+import com.auth.java.exceptions.EmailExistException;
+import com.auth.java.exceptions.NotFoundException;
+import com.auth.java.exceptions.UserRegistrationExpiredException;
 import com.auth.java.model.RoleName;
 import com.auth.java.model.User;
-import com.auth.java.payload.JwtAuthenticationResponse;
-import com.auth.java.payload.LoginRequest;
-import com.auth.java.payload.SignUpRequest;
+import com.auth.java.model.VerificationToken;
 import com.auth.java.repositories.UserRepository;
+import com.auth.java.repositories.VerificationTokenRepository;
 import com.auth.java.security.JwtTokenProvider;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,10 +23,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.*;
 
 @Service
 public class AuthService {
+
+    private static final int EXPIRATION = 60 * 24;
+    public static final String TOKEN_INVALID = "invalid";
+    public static final String TOKEN_EXPIRED = "expired";
+    public static final String TOKEN_VALID = "valid";
+    public static final String TOKEN_DISANLED = "disabled";
 
     @Autowired
     JwtTokenProvider tokenProvider;
@@ -34,7 +46,13 @@ public class AuthService {
     @Autowired
     BCryptPasswordEncoder passwordEncoder;
 
-    public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest){
+    @Autowired
+    VerificationTokenRepository tokenRepository;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
+
+    public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(), loginRequest.getPassword(), Collections.emptyList());
 
@@ -50,15 +68,72 @@ public class AuthService {
                 .build();
     }
 
-    public void registerUser(SignUpRequest signUpRequest){
+    public void registerUser(RegisterRequest registerRequest) {
+
+        Optional<User> userOptional = userRepository.findByEmail(registerRequest.getEmail());
+        if (userOptional.isPresent()) {
+            throw new EmailExistException();
+        }
 
         User newUser = User.builder()
-                .email(signUpRequest.getEmail())
-                .username(signUpRequest.getUsername())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .email(registerRequest.getEmail())
+                .username(registerRequest.getUsername())
+                .password(null)
                 .roles(Sets.newHashSet(RoleName.ROLE_USER.name()))
+                .enabled(false)
                 .build();
+        User user = userRepository.save(newUser);
 
-        userRepository.save(newUser);
+        final String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(token).user(user).expiryDate(calculateExpiryDate(EXPIRATION))
+                .status(TokenVerivicationStatus.ACTIVE)
+                .build();
+        tokenRepository.save(verificationToken);
+
+        jmsTemplate.convertAndSend("VerificationTokenQueue", verificationToken);
+
     }
+
+    public Date calculateExpiryDate(int expiryTimeInMinutes) {
+        final Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(new Date().getTime());
+        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
+        return new Date(cal.getTime().getTime());
+    }
+
+    public JwtAuthenticationResponse activateUser(String token, String password) {
+        final VerificationToken verificationToken = tokenRepository.findByTokenAndStatus(token, TokenVerivicationStatus.ACTIVE)
+                .orElseThrow(() -> new NotFoundException("Token not found"));
+
+        /*(if (verificationToken.isHasExpired()) {
+            throw new UserRegistrationExpiredException();
+        }*/
+        final Calendar cal = Calendar.getInstance();
+        if ((verificationToken.getExpiryDate()
+                .getTime()
+                - cal.getTime()
+                .getTime()) <= 0) {
+            throw new UserRegistrationExpiredException();
+        }
+
+        //setPassword()
+        //activateUserAndSendActivatedEmailIfRequired()
+        //obsoleteToken()
+
+        final User user = verificationToken.getUser();
+
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        verificationToken.setStatus(TokenVerivicationStatus.OBSOLETE);
+        tokenRepository.save(verificationToken);
+
+        LoginRequest loginRequest = LoginRequest.builder().username(user.getUsername()).password(password).build();
+
+        return authenticateUser(loginRequest);
+    }
+
+
 }
