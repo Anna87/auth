@@ -33,16 +33,10 @@ public class SenderConfig {
 
     @Bean
     public JmsTemplate jmsTemplate() {
-        //return new JmsTemplate(senderActiveMQConnectionFactory());
         JmsTemplate template = new JmsTemplate();
         template.setMessageConverter(jacksonJmsMessageConverter());
         template.setConnectionFactory(senderActiveMQConnectionFactory());
         return template;
     }
-
-    /*@Bean
-    public Sender sender() {
-        return new Sender();
-    }*/
 
 }

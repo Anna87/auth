@@ -29,10 +29,6 @@ import java.util.*;
 public class AuthService {
 
     private static final int EXPIRATION = 60 * 24;
-    public static final String TOKEN_INVALID = "invalid";
-    public static final String TOKEN_EXPIRED = "expired";
-    public static final String TOKEN_VALID = "valid";
-    public static final String TOKEN_DISANLED = "disabled";
 
     @Autowired
     JwtTokenProvider tokenProvider;
@@ -106,9 +102,6 @@ public class AuthService {
         final VerificationToken verificationToken = tokenRepository.findByTokenAndStatus(token, TokenVerivicationStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Token not found"));
 
-        /*(if (verificationToken.isHasExpired()) {
-            throw new UserRegistrationExpiredException();
-        }*/
         final Calendar cal = Calendar.getInstance();
         if ((verificationToken.getExpiryDate()
                 .getTime()
@@ -116,10 +109,6 @@ public class AuthService {
                 .getTime()) <= 0) {
             throw new UserRegistrationExpiredException();
         }
-
-        //setPassword()
-        //activateUserAndSendActivatedEmailIfRequired()
-        //obsoleteToken()
 
         final User user = verificationToken.getUser();
 
@@ -136,4 +125,7 @@ public class AuthService {
     }
 
 
+    public boolean validateToken(String token) {
+        return tokenProvider.validateToken(token);
+    }
 }

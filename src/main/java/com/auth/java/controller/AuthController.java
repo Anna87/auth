@@ -40,9 +40,17 @@ public class AuthController {
     }
 
     @PostMapping(value = "/activate")
-    public ResponseEntity<?> confirmRegistration(@RequestBody ActivateRequest activateRequest) throws UnsupportedEncodingException {
+    public ResponseEntity<?> confirmRegistration(@Valid @RequestBody ActivateRequest activateRequest) throws UnsupportedEncodingException {
 
         JwtAuthenticationResponse res = authService.activateUser(activateRequest.getToken(), activateRequest.getPassword());
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping(value = "/validateToken")
+    public ResponseEntity<?> validateToken(@RequestParam String token)  {
+
+        Boolean res = authService.validateToken(token);
 
         return ResponseEntity.ok(res);
     }
