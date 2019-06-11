@@ -87,7 +87,7 @@ public class AuthService {
                 .build();
         tokenRepository.save(verificationToken);
 
-        jmsTemplate.convertAndSend("VerificationTokenQueue", verificationToken);
+        jmsTemplate.convertAndSend("verificationToken-queue", verificationToken);
 
     }
 
