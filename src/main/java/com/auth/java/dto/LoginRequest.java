@@ -5,14 +5,11 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 
-@Builder(toBuilder = true)
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
+@Value
 public class LoginRequest {
     @NotBlank
-    private String username;
+    private final String username;
     @NotBlank
-    private String password;
+    private final String password;
 }

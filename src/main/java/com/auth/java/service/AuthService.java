@@ -3,17 +3,18 @@ package com.auth.java.service;
 import com.auth.java.dto.JwtAuthenticationResponse;
 import com.auth.java.dto.LoginRequest;
 import com.auth.java.dto.RegisterRequest;
+import com.auth.java.enums.TokenVerificationStatus;
 import com.auth.java.exceptions.EmailExistException;
 import com.auth.java.exceptions.NotFoundException;
 import com.auth.java.exceptions.UserRegistrationExpiredException;
-import com.auth.java.model.RoleName;
+import com.auth.java.enums.RoleName;
 import com.auth.java.model.User;
 import com.auth.java.model.VerificationToken;
 import com.auth.java.repositories.UserRepository;
 import com.auth.java.repositories.VerificationTokenRepository;
 import com.auth.java.security.JwtTokenProvider;
 import com.google.common.collect.Sets;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,40 +24,38 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.*;
 
+@RequiredArgsConstructor
 @Service
 public class AuthService {
 
-    private static final int EXPIRATION = 60 * 24;
+    private final int expirationValue = 60 * 24;
 
-    @Autowired
-    JwtTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    VerificationTokenRepository tokenRepository;
+    private final VerificationTokenRepository tokenRepository;
 
-    @Autowired
-    private JmsTemplate jmsTemplate;
+    private final JmsTemplate jmsTemplate;
 
-    public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(), loginRequest.getPassword(), Collections.emptyList());
+    public JwtAuthenticationResponse authenticateUser(@Valid final LoginRequest loginRequest) {
+        final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                loginRequest.getUsername(),
+                loginRequest.getPassword(),
+                Collections.emptyList());
 
-        Authentication authentication = authenticationManager.authenticate(authToken);
+        final Authentication authentication = authenticationManager.authenticate(authToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.createToken(authentication);
+        final String jwt = tokenProvider.createToken(authentication);
 
         return JwtAuthenticationResponse.builder()
                 .token(jwt).userName(authentication.getName())
@@ -64,26 +63,27 @@ public class AuthService {
                 .build();
     }
 
-    public void registerUser(RegisterRequest registerRequest) {
+    public void registerUser(final RegisterRequest registerRequest) {
 
         Optional<User> userOptional = userRepository.findByEmail(registerRequest.getEmail());
         if (userOptional.isPresent()) {
             throw new EmailExistException();
         }
 
-        User newUser = User.builder()
+        final User newUser = User.builder()
                 .email(registerRequest.getEmail())
                 .username(registerRequest.getUsername())
                 .password(null)
                 .roles(Sets.newHashSet(RoleName.ROLE_USER.name()))
                 .enabled(false)
                 .build();
-        User user = userRepository.save(newUser);
+        final User user = userRepository.save(newUser);
 
         final String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
-                .token(token).user(user).expiryDate(calculateExpiryDate(EXPIRATION))
-                .status(TokenVerivicationStatus.ACTIVE)
+                .token(token).user(user)
+                .expiryDate(calculateExpiryDate(expirationValue))
+                .status(TokenVerificationStatus.ACTIVE)
                 .build();
         tokenRepository.save(verificationToken);
 
@@ -91,15 +91,15 @@ public class AuthService {
 
     }
 
-    public Date calculateExpiryDate(int expiryTimeInMinutes) {
+    public Date calculateExpiryDate(final int expiryTimeInMinutes) {
         final Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(new Date().getTime());
         cal.add(Calendar.MINUTE, expiryTimeInMinutes);
         return new Date(cal.getTime().getTime());
     }
 
-    public JwtAuthenticationResponse activateUser(String token, String password) {
-        final VerificationToken verificationToken = tokenRepository.findByTokenAndStatus(token, TokenVerivicationStatus.ACTIVE)
+    public JwtAuthenticationResponse activateUser(final String token, final String password) {
+        final VerificationToken verificationToken = tokenRepository.findByTokenAndStatus(token, TokenVerificationStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Token not found"));
 
         final Calendar cal = Calendar.getInstance();
@@ -111,15 +111,21 @@ public class AuthService {
         }
 
         final User user = verificationToken.getUser();
+        final User userToUpdate = user.toBuilder()
+                .password(passwordEncoder.encode(password))
+                .enabled(true)
+                .build();
+        userRepository.save(userToUpdate);
 
-        user.setPassword(passwordEncoder.encode(password));
-        user.setEnabled(true);
-        userRepository.save(user);
+        final VerificationToken verificationTokenToUpdate = verificationToken.toBuilder()
+                .status(TokenVerificationStatus.OBSOLETE)
+                .build();
+        tokenRepository.save(verificationTokenToUpdate);
 
-        verificationToken.setStatus(TokenVerivicationStatus.OBSOLETE);
-        tokenRepository.save(verificationToken);
-
-        LoginRequest loginRequest = LoginRequest.builder().username(user.getUsername()).password(password).build();
+        final LoginRequest loginRequest = LoginRequest.builder()
+                .username(user.getUsername())
+                .password(password)
+                .build();
 
         return authenticateUser(loginRequest);
     }

@@ -1,4 +1,4 @@
-package com.auth.java.model;
+package com.auth.java.enums;
 
 
 public enum RoleName {

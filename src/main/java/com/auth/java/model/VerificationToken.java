@@ -1,6 +1,6 @@
 package com.auth.java.model;
 
-import com.auth.java.service.TokenVerivicationStatus;
+import com.auth.java.enums.TokenVerificationStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,5 +19,5 @@ public class VerificationToken {
     private String token;
     private User user;
     private Date expiryDate;
-    private TokenVerivicationStatus status;
+    private TokenVerificationStatus status;
 }

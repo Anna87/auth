@@ -3,22 +3,23 @@ package com.auth.java.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Getter
+@Component
 public class JwtConfig {
-    @Value("/auth/**")
+    @Value("${jwt.config.uri:}")
     private String Uri;
 
-    @Value("Authorization")
+    @Value("${jwt.config.header:}")
     private String header;
 
-    @Value("Bearer ")
+    @Value("${jwt.config.prefix:}")
     private String prefix;
 
-    @Value("#{24*60*60}")
+    @Value("#{24*60*60}") //TODO yml without default
     private int expiration;
 
-    @Value("JwtSecretKey")
+    @Value("${jwt.config.secret:}")
     private String secret;
-
 }

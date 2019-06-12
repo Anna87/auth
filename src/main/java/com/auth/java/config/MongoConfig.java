@@ -10,8 +10,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class MongoConfig extends AbstractMongoConfiguration {
     @Override
     protected String getDatabaseName() {
-        String name;
-
         return "auth";
     }
 

@@ -1,20 +1,19 @@
 package com.auth.java.dto;
 
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Value;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-@Setter
-@Getter
+@Builder
+@Value
 public class RegisterRequest {
     @NotBlank
-    private String username;
+    private final String username;
 
-    @NotBlank
     @Email
-    private String email;
+    private final String email;
 
 }

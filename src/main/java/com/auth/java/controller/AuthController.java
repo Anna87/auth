@@ -4,54 +4,40 @@ import com.auth.java.dto.ActivateRequest;
 import com.auth.java.dto.JwtAuthenticationResponse;
 import com.auth.java.dto.LoginRequest;
 import com.auth.java.dto.RegisterRequest;
-import com.auth.java.repositories.UserRepository;
 import com.auth.java.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.UnsupportedEncodingException;
+import javax.validation.constraints.NotBlank;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    UserRepository userRepository;
+    private final AuthService authService;
 
-    @Autowired
-    AuthService authService;
-
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-
+    public void registerUser(@Valid @RequestBody final RegisterRequest registerRequest) {
         authService.registerUser(registerRequest);
-
-        return ResponseEntity.ok("You have been sent an email to confirm registration.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
-        JwtAuthenticationResponse res = authService.authenticateUser(loginRequest);
-
-        return ResponseEntity.ok(res);
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody final LoginRequest loginRequest) {
+        return ResponseEntity.ok(authService.authenticateUser(loginRequest));
     }
 
     @PostMapping(value = "/activate")
-    public ResponseEntity<?> confirmRegistration(@Valid @RequestBody ActivateRequest activateRequest) throws UnsupportedEncodingException {
-
-        JwtAuthenticationResponse res = authService.activateUser(activateRequest.getToken(), activateRequest.getPassword());
-
-        return ResponseEntity.ok(res);
+    public ResponseEntity<JwtAuthenticationResponse> confirmRegistration(@Valid @RequestBody final ActivateRequest activateRequest) {
+        return ResponseEntity.ok(authService.activateUser(activateRequest.getToken(), activateRequest.getPassword()));
     }
 
-    @PostMapping(value = "/validateToken")
-    public ResponseEntity<?> validateToken(@RequestParam String token)  {
-
-        Boolean res = authService.validateToken(token);
-
-        return ResponseEntity.ok(res);
+    @PostMapping(value = "/validate")
+    public ResponseEntity<Boolean> validateToken(@NotBlank @RequestParam final String token)  {
+        return ResponseEntity.ok(authService.validateToken(token));
     }
 }

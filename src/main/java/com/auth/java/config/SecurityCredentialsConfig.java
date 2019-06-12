@@ -1,6 +1,6 @@
 package com.auth.java.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,12 +16,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import javax.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityCredentialsConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private JwtConfig jwtConfig;
+    private final JwtConfig jwtConfig;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -46,12 +45,6 @@ public class SecurityCredentialsConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
-
-    @Bean
-    public JwtConfig jwtConfig() {
-        return new JwtConfig();
-    }
-
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

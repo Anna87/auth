@@ -1,13 +1,13 @@
 package com.auth.java.dto;
 
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Value;
 
 import javax.validation.constraints.NotBlank;
 
-@Setter
-@Getter
+@Builder
+@Value
 public class ActivateRequest {
     @NotBlank
     private String password;

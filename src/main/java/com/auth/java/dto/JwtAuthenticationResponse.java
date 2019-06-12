@@ -6,10 +6,7 @@ import lombok.*;
 import java.util.Set;
 
 @Builder(toBuilder = true)
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@Value
 public class JwtAuthenticationResponse {
     private String token;
     private String userName;
