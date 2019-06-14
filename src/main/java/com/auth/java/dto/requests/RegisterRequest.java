@@ -1,4 +1,4 @@
-package com.auth.java.dto;
+package com.auth.java.dto.requests;
 
 
 import lombok.Builder;

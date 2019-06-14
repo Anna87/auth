@@ -1,8 +1,9 @@
 package com.auth.java.service;
 
-import com.auth.java.dto.JwtAuthenticationResponse;
-import com.auth.java.dto.LoginRequest;
-import com.auth.java.dto.RegisterRequest;
+import com.auth.java.dto.responses.JwtAuthenticationResponse;
+import com.auth.java.dto.requests.LoginRequest;
+import com.auth.java.dto.requests.RegisterRequest;
+import com.auth.java.dto.VerificationTokenNotificationDetails;
 import com.auth.java.enums.TokenVerificationStatus;
 import com.auth.java.exceptions.EmailExistException;
 import com.auth.java.exceptions.NotFoundException;
@@ -81,13 +82,19 @@ public class AuthService {
 
         final String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
-                .token(token).user(user)
+                .token(token)
+                .user(user)
                 .expiryDate(calculateExpiryDate(expirationValue))
                 .status(TokenVerificationStatus.ACTIVE)
                 .build();
         tokenRepository.save(verificationToken);
 
-        jmsTemplate.convertAndSend("verificationToken-queue", verificationToken);
+        VerificationTokenNotificationDetails verificationTokenNotificationDetails = VerificationTokenNotificationDetails.builder()
+                .verificationToken(token)
+                .username(registerRequest.getUsername())
+                .userEmail(registerRequest.getEmail())
+                .build();
+        jmsTemplate.convertAndSend("verificationToken-queue", verificationTokenNotificationDetails);
 
     }
 

@@ -12,7 +12,7 @@ import org.springframework.jms.support.converter.MessageType;
 @Configuration
 public class SenderConfig {
 
-    @Value("tcp://localhost:61616")//TODO
+    @Value("${jms.sender.broker-url:}")
     private String brokerUrl;
 
     @Bean

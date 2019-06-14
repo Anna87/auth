@@ -1,9 +1,9 @@
 package com.auth.java.controller;
 
-import com.auth.java.dto.ActivateRequest;
-import com.auth.java.dto.JwtAuthenticationResponse;
-import com.auth.java.dto.LoginRequest;
-import com.auth.java.dto.RegisterRequest;
+import com.auth.java.dto.requests.ActivateRequest;
+import com.auth.java.dto.responses.JwtAuthenticationResponse;
+import com.auth.java.dto.requests.LoginRequest;
+import com.auth.java.dto.requests.RegisterRequest;
 import com.auth.java.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

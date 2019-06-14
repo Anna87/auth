@@ -19,4 +19,8 @@ jwt:
     expiration: 24*60*60
     secret: JwtSecretKey
 
+jms:
+  sender:
+    broker-url: tcp://localhost:61616
+
 
