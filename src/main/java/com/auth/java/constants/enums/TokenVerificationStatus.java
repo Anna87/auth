@@ -1,4 +1,4 @@
-package com.auth.java.enums;
+package com.auth.java.constants.enums;
 
 
 public enum TokenVerificationStatus {

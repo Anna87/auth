@@ -1,14 +1,15 @@
 package com.auth.java.service;
 
-import com.auth.java.dto.responses.JwtAuthenticationResponse;
+import com.auth.java.converters.VerificationTokenNotificationDetailsConverter;
 import com.auth.java.dto.requests.LoginRequest;
 import com.auth.java.dto.requests.RegisterRequest;
-import com.auth.java.dto.VerificationTokenNotificationDetails;
-import com.auth.java.enums.TokenVerificationStatus;
+import com.auth.java.dto.responses.JwtAuthenticationResponse;
+import com.auth.java.dto.responses.NotificationDetails;
+import com.auth.java.constants.enums.RoleName;
+import com.auth.java.constants.enums.TokenVerificationStatus;
 import com.auth.java.exceptions.EmailExistException;
 import com.auth.java.exceptions.NotFoundException;
 import com.auth.java.exceptions.UserRegistrationExpiredException;
-import com.auth.java.enums.RoleName;
 import com.auth.java.model.User;
 import com.auth.java.model.VerificationToken;
 import com.auth.java.repositories.UserRepository;
@@ -45,6 +46,8 @@ public class AuthService {
     private final VerificationTokenRepository tokenRepository;
 
     private final JmsTemplate jmsTemplate;
+
+    private final VerificationTokenNotificationDetailsConverter verificationTokenNotificationDetailsConverter;
 
     public JwtAuthenticationResponse authenticateUser(@Valid final LoginRequest loginRequest) {
         final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -89,12 +92,8 @@ public class AuthService {
                 .build();
         tokenRepository.save(verificationToken);
 
-        VerificationTokenNotificationDetails verificationTokenNotificationDetails = VerificationTokenNotificationDetails.builder()
-                .verificationToken(token)
-                .username(registerRequest.getUsername())
-                .userEmail(registerRequest.getEmail())
-                .build();
-        jmsTemplate.convertAndSend("verificationToken-queue", verificationTokenNotificationDetails);
+        NotificationDetails notificationDetails = verificationTokenNotificationDetailsConverter.convert(verificationToken);
+        jmsTemplate.convertAndSend("notification-queue", notificationDetails);
 
     }
 

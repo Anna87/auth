@@ -1,6 +1,6 @@
 package com.auth.java.model;
 
-import com.auth.java.enums.TokenVerificationStatus;
+import com.auth.java.constants.enums.TokenVerificationStatus;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

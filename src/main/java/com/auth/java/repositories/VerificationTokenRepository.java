@@ -2,7 +2,7 @@ package com.auth.java.repositories;
 
 
 import com.auth.java.model.VerificationToken;
-import com.auth.java.enums.TokenVerificationStatus;
+import com.auth.java.constants.enums.TokenVerificationStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

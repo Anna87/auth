@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.sql.Date;
 import java.util.stream.Collectors;
 
+import static com.auth.java.constants.Constants.AUTHORITIES;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -22,7 +24,7 @@ public class JwtTokenProvider {
         final Long now = System.currentTimeMillis();
         return Jwts.builder()
                 .setSubject(auth.getName())
-                .claim("authorities", auth.getAuthorities().stream()
+                .claim(AUTHORITIES, auth.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + jwtConfig.getExpiration() * 1000))  // in milliseconds
@@ -30,21 +32,15 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public Boolean validateToken(final String authToken){
+    public Boolean validateToken(final String authToken){ // void throw custom exception, on frontend check status
         try {
             final String token = authToken.substring(jwtConfig.getPrefix().length());
             Jwts.parser()
                     .setSigningKey(jwtConfig.getSecret().getBytes())
                     .parseClaimsJws(token);
             return true;
-        } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            log.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty.");
+        } catch (RuntimeException ex) { //TODO
+            log.error("Invalid JWT token", ex);
         }
         return false;
     }

@@ -17,7 +17,7 @@ public class JwtConfig {
     @Value("${jwt.config.prefix:}")
     private String prefix;
 
-    @Value("#{24*60*60}") //TODO yml without default
+    @Value("${jwt.config.expiration}")
     private int expiration;
 
     @Value("${jwt.config.secret:}")
