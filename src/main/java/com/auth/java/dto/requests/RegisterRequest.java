@@ -12,7 +12,6 @@ import javax.validation.constraints.NotBlank;
 public class RegisterRequest {
     @NotBlank
     private final String username;
-
     @Email
     private final String email;
 
